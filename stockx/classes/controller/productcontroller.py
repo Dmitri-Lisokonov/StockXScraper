@@ -1,0 +1,2 @@
+class ProductController:
+    pass
