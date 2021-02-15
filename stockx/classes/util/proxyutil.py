@@ -1,5 +1,6 @@
-import random
+import requests
 import time
+
 
 class ProxyUtil:
     # Rotate proxy.

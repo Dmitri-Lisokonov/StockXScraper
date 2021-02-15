@@ -3,13 +3,8 @@ import json
 import time
 from threading import Thread as TaskProcessor
 from classes.models.product import Product
-# Random useragent.
 from random_useragent.random_useragent import Randomize
-
 random_ua = Randomize()
-
-from classes.util.proxyutil import ProxyUtil
-
 
 class Task(TaskProcessor):
     def __init__(self, product, proxies):

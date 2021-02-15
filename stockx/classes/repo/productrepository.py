@@ -9,7 +9,7 @@ class ProductRepository:
         self.cursor = self.connection_manager.cursor
         self.context = ProductContext(self.cursor)
 
-# CRUD Operations
+    # CRUD Operations
     def create_product(self, product):
         self.context.create_product(product)
 
