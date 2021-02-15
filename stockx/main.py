@@ -1,9 +1,7 @@
-from classes.util.connectionmanager import ConnectionManager
-from classes.context.productcontext import ProductContext
+from classes.repo.productrepository import ProductRepository
 from classes.models.product import Product
 
-conn_manager = ConnectionManager()
-product_manager = ProductContext(conn_manager.cursor)
+repo = ProductRepository()
 
 def main():
     # thread_list = []
@@ -36,11 +34,8 @@ def main():
     # for thread in thread_list:
     #     thread.start()
 
-    new_product = Product(link='www.product.com', style='new_style1', name='Patta', retail_price='1337', date='11-02-2004')
-    new_product.id = 1
-    product_manager.update_product(new_product)
-    products = product_manager.get_products()
-    print(products[0].id, products[0].link, products[0].retail_price, products[0].date, products[0].style)
+    new_product = Product(url='www.product.comm', style='new_style1', name='Patta', retail_price='1337', release_date='11-02-2004')
+    repo.update_product(new_product, 'www.product.com')
 
 
 if __name__ == "__main__":
