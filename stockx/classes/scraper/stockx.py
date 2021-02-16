@@ -125,7 +125,7 @@ class StockxTask(TaskProcessor):
         if response.status_code == 200:
             try:
                 # Parse product information.
-                # Parse product information.
+                # Below info maybe found in JSON?
                 soup = BeautifulSoup(response.text, 'html.parser')
                 element = soup.find('span', {'data-testid': 'product-detail-style'})
                 style_code = element.text.strip()

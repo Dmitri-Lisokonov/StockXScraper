@@ -1,7 +1,6 @@
 from classes.context.productcontext import ProductContext
 from classes.util.connectionmanager import ConnectionManager
 from classes.scraper.stockx import StockxTask
-import threading
 from proxymanager import ProxyManager
 
 
@@ -22,7 +21,6 @@ class ProductRepository:
             return
 
         products = self.get_products()
-
         for product in products:
             product_class = {
                 'url': product.url
