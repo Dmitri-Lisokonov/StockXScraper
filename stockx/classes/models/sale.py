@@ -1,6 +1,8 @@
 class Sale:
-    def __init__(self, id, url, size, date, price):
-        self.id = id
+
+    id = None
+
+    def __init__(self, url, size, date, price):
         self.url = url
         self.size = size
         self.date = date

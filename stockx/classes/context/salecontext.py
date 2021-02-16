@@ -1,6 +1,8 @@
 from classes.models.sale import Sale
 
 
+# Class for extracting and manipulating data from the product table.
+# @param: cursor used from ConnectionManager class
 class SaleContext:
 
     def __init__(self, cursor):

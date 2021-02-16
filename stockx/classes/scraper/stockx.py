@@ -3,16 +3,22 @@ import json
 import time
 from threading import Thread as TaskProcessor
 from classes.models.product import Product
+from classes.models.sale import Sale
+from classes.util.proxyutil import ProxyUtil
+from bs4 import BeautifulSoup
 from random_useragent.random_useragent import Randomize
+
 random_ua = Randomize()
 
-class Task(TaskProcessor):
-    def __init__(self, product, proxies):
-        self.product = product
+
+class StockxTask(TaskProcessor):
+
+    def __init__(self, product_dict, proxies):
+        self.product_dict = product_dict
         self.proxies = proxies
         self.session = requests.session()
 
-        self.utils = Utils()
+        self.utils = ProxyUtil()
 
         self.proxy = self.utils.initialize_proxy(proxies=self.proxies)
         self.session.proxies = self.proxy
@@ -36,13 +42,13 @@ class Task(TaskProcessor):
 
     def fetch_sales_per_size(self):
 
-        products = []
+        sales = []
 
-        print(f'Fetching sales for {self.product["url"]}')
+        print(f'Fetching sales for {self.product_dict["url"]}')
         try:
-            response = self.session.get(self.product['url'], headers=self.headers, timeout=self.timeout)
+            response = self.session.get(self.product_dict['url'], headers=self.headers, timeout=self.timeout)
         except Exception as e:
-            print(f'Could not request {self.product["url"]} => {e}')
+            print(f'Could not request {self.product_dict["url"]} => {e}')
             time.sleep(self.delay)
             pass
 
@@ -53,6 +59,7 @@ class Task(TaskProcessor):
                 data_split = \
                 response.text.split('class="product-view"><script type="application/ld+json">')[1].split("</script>")[0]
                 json_response = json.loads(data_split)
+                print(json_response)
             except:
                 print('Could not split response / load as JSON!')
                 time.sleep(self.delay)
@@ -89,19 +96,64 @@ class Task(TaskProcessor):
 
                 for i in range(total):
                     # Filter with date and add to list.
-                    product = Product(json_response['ProductActivity'][i]['shoeSize'], json_response['ProductActivity'][i]['localAmount'], json_response['ProductActivity'][i]['createdAt'])
-                    products.append(product)
-                    print(f"size:{products[i].size}, price: {products[i].price}, date: {products[i].date}")
+                    sale = Sale(self.product_dict["url"], json_response['ProductActivity'][i]['shoeSize'], json_response['ProductActivity'][i]['createdAt'], json_response['ProductActivity'][i]['localAmount'])
+                    sales.append(sale)
+
         # Banned.
         elif response.status_code == 403:
             print(response.status_code)
-            print(f'Could not fetch sales for {self.product["url"]} - banned!')
+            print(f'Could not fetch sales for {self.product_dict["url"]} - banned!')
             del self.session.cookies['__cfduid']
             # Rotate proxy here.
             time.sleep(self.delay)
             pass
         # Unknown status code.
         else:
-            print(f'Could not fetch sales for {self.product["url"]} - unknow status code: {response.status_code}!')
+            print(f'Could not fetch sales for {self.product_dict["url"]} - unknow status code: {response.status_code}!')
             time.sleep(self.delay)
             pass
+
+    def fetch_product_info(self):
+        try:
+            response = self.session.get(self.product_dict['url'], headers=self.headers, timeout=self.timeout)
+        except Exception as e:
+            print(f'Could not request {self.product_dict["url"]} => {e}')
+            time.sleep(self.delay)
+            pass
+
+        # Valid status code.
+        if response.status_code == 200:
+            try:
+                # Parse product information.
+                # Parse product information.
+                soup = BeautifulSoup(response.text, 'html.parser')
+                element = soup.find('span', {'data-testid': 'product-detail-style'})
+                style_code = element.text.strip()
+                element = soup.find('span', {'data-testid': 'product-detail-colorway'})
+                colorway = element.text.strip()
+                element = soup.find('span', {'data-testid': 'product-detail-retail price'})
+                retail_price = element.text.strip()
+                element = soup.find('span', {'data-testid': 'product-detail-release date'})
+                date = element.text.strip()
+                element = soup.find('h1', {'data-testid': 'product-name'})
+                name = element.text.strip()
+                product = Product(self.product_dict["url"], style_code, name, colorway, date, retail_price)
+                print(f'fetched info for product, style: {style_code} cw: {colorway} retail price: {retail_price} date: {date}')
+            except:
+                print('Could not split response / load as JSON!')
+                time.sleep(self.delay)
+                pass
+            # Banned.
+        elif response.status_code == 403:
+            print(response.status_code)
+            print(f'Could not fetch sales for {self.product_dict["url"]} - banned!')
+            del self.session.cookies['__cfduid']
+            # Rotate proxy here.
+            time.sleep(self.delay)
+            pass
+            # Unknown status code.
+        else:
+            print(f'Could not fetch product info for {self.product["url"]} - unknow status code: {response.status_code}!')
+            time.sleep(self.delay)
+            pass
+        return product

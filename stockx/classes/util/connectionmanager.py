@@ -8,7 +8,7 @@ class ConnectionManager:
 
     # add variables for connection.
     def __init__(self):
-        self.conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
+        self.conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server}; '
                                    'Server=stockxscraper.database.windows.net;'
                                    'Database=stockxscraper;'
                                    'UID=stockx-database-username;'

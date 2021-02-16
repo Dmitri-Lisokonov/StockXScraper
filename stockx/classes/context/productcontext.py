@@ -9,7 +9,7 @@ class ProductContext:
 
     def create_product(self, product):
         query = f"INSERT INTO product " \
-                f"VALUES ('{product.url}', '{product.style}', '{product.name}', '{product.release_date}', {product.retail_price})"
+                f"VALUES ('{product.url}', '{product.style}', '{product.name}', '{product.colorway}' '{product.release_date}', {product.retail_price})"
         self.cursor.execute(query).commit()
 
     def get_products(self):
@@ -19,8 +19,9 @@ class ProductContext:
 
     def update_product(self, product, url):
         query = f"UPDATE product " \
-                f"SET url = '{product.url}', stylecode = '{product.style}', name = '{product.name}', releaseDate = '{product.release_date}', retailPrice = {product.retail_price} " \
+                f"SET url = '{product.url}', stylecode = '{product.style}', name = '{product.name}', colorway = '{product.colorway}', releaseDate = '{product.release_date}', retailPrice = {product.retail_price} " \
                 f"WHERE url = '{url}'"
+        print(query)
         self.cursor.execute(query).commit()
 
     def delete_product(self, url):
@@ -41,7 +42,6 @@ class ProductContext:
         for row in rows:
             print(row)
             # Add converters.
-            product = Product(row[1], row[2], row[3], row[4], row[5])
-            product.id = row[0]
+            product = Product(row[0], row[1], row[2], row[3], row[4], row[5])
             product_list.append(product)
         return product_list
