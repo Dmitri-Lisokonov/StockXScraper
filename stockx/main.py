@@ -11,7 +11,7 @@ def main():
     # repo = ProductRepository()
     # repo.scrape_product_info()
     app = AppController()
-    app.init()
+    app.scrape_sales()
 
 
 if __name__ == "__main__":

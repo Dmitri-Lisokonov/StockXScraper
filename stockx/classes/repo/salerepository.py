@@ -28,7 +28,9 @@ class SaleRepository:
             stockx_task = StockxTask(product_dict=product_class, proxies=proxy_manager)
             result = stockx_task.fetch_sales_per_size()
             # Store sales in database
-            self.create_sale(result)
+            for sale in result:
+                print(f"Inserting {sale.url}, {sale.price}, {sale.date} into database")
+                self.create_sale(sale)
 
     # CRUD Operations
     def create_sale(self, product):

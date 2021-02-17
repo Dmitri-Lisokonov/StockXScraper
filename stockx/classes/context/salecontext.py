@@ -50,8 +50,6 @@ class SaleContext:
         sale_list = []
         rows = self.cursor.fetchall()
         for row in rows:
-            print(row)
-            # Add converters.
             sale = Sale(row[1], row[2], row[3], row[4])
             sale.id = row[0]
             sale_list.append(sale)

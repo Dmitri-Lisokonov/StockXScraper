@@ -102,6 +102,7 @@ class StockxTask(TaskProcessor):
                                 json_response['ProductActivity'][i]['createdAt'],
                                 json_response['ProductActivity'][i]['localAmount'])
                     sales.append(sale)
+            return sales
 
         # Banned.
         elif response.status_code == 403:

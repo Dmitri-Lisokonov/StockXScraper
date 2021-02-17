@@ -40,12 +40,11 @@ class ProductContext:
         self.cursor.execute(query)
         return self.convert_to_product_list()
 
-# Read all rows from result, convert to product and add to list
+    # Read all rows from result, convert to product and add to list
     def convert_to_product_list(self):
         product_list = []
         rows = self.cursor.fetchall()
         for row in rows:
-            # Add converters.
             product = Product(row[0], row[1], row[2], row[3], row[4], row[5])
             product_list.append(product)
         return product_list
