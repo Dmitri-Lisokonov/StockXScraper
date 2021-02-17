@@ -18,8 +18,8 @@ class ProductContext:
         return self.convert_to_product_list()
 
     def get_products_without_info(self):
-        query = f"SELECT * FROM product " \
-                f"WHERE name IS NULL"
+        query = "SELECT * FROM product " \
+                "WHERE styleCode IS NULL AND name IS NULL AND colorway IS NULL AND releaseDate IS NULL AND retailPrice IS NULL"
         self.cursor.execute(query)
         return self.convert_to_product_list()
 
