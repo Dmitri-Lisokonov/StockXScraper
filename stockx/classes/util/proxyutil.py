@@ -22,6 +22,5 @@ class ProxyUtil:
     @staticmethod
     def initialize_proxy(proxies):
         random_proxy = proxies.random_proxy().get_dict()
-        print(random_proxy)
         time.sleep(1)
         return random_proxy

@@ -1,3 +1,4 @@
+import logging
 from classes.entity.product import Product
 
 
@@ -10,41 +11,69 @@ class ProductContext:
     def create_product(self, product):
         query = f"INSERT INTO product " \
                 f"VALUES ('{product.url}', '{product.style}', '{product.name}', '{product.colorway}' '{product.release_date}', {product.retail_price})"
-        self.cursor.execute(query).commit()
+        try:
+            	self.cursor.execute(query).commit()
+        except Exception as e:
+            logging.error(f"Could not create product => {e}")
+            raise e
 
     def get_products(self):
         query = "SELECT * FROM product"
-        self.cursor.execute(query)
+        try:
+            self.cursor.execute(query)
+        except Exception as e:
+            logging.error(f"Could not get products => {e}")
+            raise e
         return self.convert_to_product_list()
 
     def get_products_without_info(self):
         query = "SELECT * FROM product " \
                 "WHERE styleCode IS NULL AND name IS NULL AND colorway IS NULL AND releaseDate IS NULL AND retailPrice IS NULL"
-        self.cursor.execute(query)
+        try:
+            self.cursor.execute(query)
+        except Exception as e:
+            logging.error(f"Could not get products without info => {e}")
+            raise e
         return self.convert_to_product_list()
 
     def update_product(self, product, url):
         query = f"UPDATE product " \
                 f"SET url = '{product.url}', stylecode = '{product.style}', name = '{product.name}', colorway = '{product.colorway}', releaseDate = '{product.release_date}', retailPrice = {product.retail_price} " \
                 f"WHERE url = '{url}'"
-        self.cursor.execute(query).commit()
+        try:
+            self.cursor.execute(query).commit()
+        except Exception as e:
+            logging.error(f"Could not update product: {product} {url} => {e}")
+            raise e
 
     def delete_product(self, url):
         query = f"DELETE FROM product " \
                 f"WHERE url = '{url}'"
-        self.cursor.execute(query).commit()
+        try:
+            self.cursor.execute(query).commit()
+        except Exception as e:
+            logging.error(f"Could not delete product: {url} => {e}")
+            raise e
 
     def get_product_by_url(self, url):
         query = f"SELECT * FROM product " \
                 f"WHERE url = '{url}'"
-        self.cursor.execute(query)
+        try:
+            self.cursor.execute(query)
+        except Exception as e:
+            logging.error(f"Could not get product by url: {url} => {e}")
+            raise e
         return self.convert_to_product_list()
 
     # Read all rows from result, convert to product and add to list
     def convert_to_product_list(self):
         product_list = []
         rows = self.cursor.fetchall()
-        for row in rows:
-            product = Product(row[0], row[1], row[2], row[3], row[4], row[5])
-            product_list.append(product)
+        try:
+            for row in rows:
+                product = Product(row[0], row[1], row[2], row[3], row[4], row[5])
+                product_list.append(product)
+        except Exception as e:
+            logging.error(f"Could not convert to product list => {e}")
+            raise e
         return product_list

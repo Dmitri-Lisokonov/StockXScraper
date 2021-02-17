@@ -1,5 +1,5 @@
 import pyodbc
-
+import logging
 
 # Class for initialising database connection.
 class ConnectionManager:
@@ -8,10 +8,14 @@ class ConnectionManager:
 
     # add variables for connection.
     def __init__(self):
-        self.conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server}; '
-                                   'Server=stockxscraper.database.windows.net;'
-                                   'Database=stockxscraper;'
-                                   'UID=stockx-database-username;'
-                                   'PWD=Lodewijkhasib12!;'
-                                   )
-        self.cursor = self.conn.cursor()
+        try:
+            self.conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server}; '
+                                    'Server=stockxscraper.database.windows.net;'
+                                    'Database=stockxscraper;'
+                                    'UID=stockx-database-username;'
+                                    'PWD=Lodewijkhasib12!;'
+                                    )
+            self.cursor = self.conn.cursor()
+        except Exception as e:
+            logging.critical(f"Could not initialze connectionmanager => {e}")
+            raise e

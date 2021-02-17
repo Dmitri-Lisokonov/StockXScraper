@@ -1,3 +1,4 @@
+import logging
 import requests
 import json
 import time
@@ -45,122 +46,142 @@ class StockxTask(TaskProcessor):
     def fetch_sales_per_size(self):
 
         sales = []
-
-        print(f'Fetching sales for {self.product_dict["url"]}')
-        try:
-            response = self.session.get(self.product_dict['url'], headers=self.headers, timeout=self.timeout)
-        except Exception as e:
-            print(f'Could not request {self.product_dict["url"]} => {e}')
-            time.sleep(self.delay)
-            pass
-
-        # Valid status code.
-        if response.status_code == 200:
-            # Splitting product data and loading as JSON.
+        while True:
+            print(f'Fetching sales for {self.product_dict["url"]}')
             try:
-                data_split = \
-                    response.text.split('class="product-view"><script type="application/ld+json">')[1].split(
-                        "</script>")[0]
-                json_response = json.loads(data_split)
-            except:
-                print('Could not split response / load as JSON!')
+                response = self.session.get(self.product_dict['url'], headers=self.headers, timeout=self.timeout)
+            except Exception as e:
+                print(f'Could not request {self.product_dict["url"]} => {e}')
+                logging.error(f"Could not request {self.product_dict['url']} (fetch sales per size) => {e}")
                 time.sleep(self.delay)
-                pass
+                continue
 
-            # Looping trough sizes.
-            for size in json_response['offers']['offers']:
-                params = (
-                    ('state', '480'),
-                    ('currency', 'EUR'),
-                    ('limit', '250'),
-                    ('page', '1'),
-                    ('sort', 'createdAt'),
-                    ('order', 'DESC'),
-                    ('country', 'NL'),
-                )
-
-                print(f'Requesting sales for size {size["description"]} {size["sku"]}')
-
+            # Valid status code.
+            if response.status_code == 200:
+                # Splitting product data and loading as JSON.
                 try:
-                    response = self.session.get(f'https://stockx.com/api/products/{size["sku"]}/activity',
-                                                headers=self.headers, params=params, timeout=self.timeout)
+                    data_split = \
+                        response.text.split('class="product-view"><script type="application/ld+json">')[1].split(
+                            "</script>")[0]
+                    json_response = json.loads(data_split)
                 except:
-                    print(f'Could not request sales for size {size["description"]}!')
+                    print('Could not split response / load as JSON!')
+                    logging.error(f"Could not split response / load as json (fetch sales per size) => {e}")
                     time.sleep(self.delay)
                     continue
 
-                # Loading response as JSON .
-                json_response = json.loads(response.text)
+                # Looping trough sizes.
+                for size in json_response['offers']['offers']:
+                    params = (
+                        ('state', '480'),
+                        ('currency', 'EUR'),
+                        ('limit', '250'),
+                        ('page', '1'),
+                        ('sort', 'createdAt'),
+                        ('order', 'DESC'),
+                        ('country', 'NL'),
+                    )
 
-                total = json_response["Pagination"]["total"]
+                    print(f'Requesting sales for size {size["description"]} {size["sku"]}')
 
-                print(f'Size {size["description"]} got a total sale of: {total}')
+                    try:
+                        response = self.session.get(f'https://stockx.com/api/products/{size["sku"]}/activity',
+                                                    headers=self.headers, params=params, timeout=self.timeout)
+                    except:
+                        print(f'Could not request sales for size {size["description"]}!')
+                        logging.error(f"Could not request sales for size {size['description']} (fetch sales per size) => {e}")
+                        time.sleep(self.delay)
+                        continue
 
-                for i in range(total):
-                    # Filter with date and add to list.
-                    sale = Sale(self.product_dict["url"], json_response['ProductActivity'][i]['shoeSize'],
-                                json_response['ProductActivity'][i]['createdAt'],
-                                json_response['ProductActivity'][i]['localAmount'])
-                    sales.append(sale)
-            return sales
+                    # Loading response as JSON .
+                    json_response = json.loads(response.text)
 
-        # Banned.
-        elif response.status_code == 403:
-            print(response.status_code)
-            print(f'Could not fetch sales for {self.product_dict["url"]} - banned!')
-            del self.session.cookies['__cfduid']
-            # Rotate proxy here.
-            time.sleep(self.delay)
-            pass
-        # Unknown status code.
-        else:
-            print(f'Could not fetch sales for {self.product_dict["url"]} - unknow status code: {response.status_code}!')
-            time.sleep(self.delay)
-            pass
+                    try:
+                        total = json_response["Pagination"]["total"]
+                    except Exception as e:
+                        print(f'Could not fetch total => {e}!')
+                        logging.error(f"Could not fetch total => {e}!")
+                        time.sleep(self.delay)
+                        continue
+
+                    print(f'Size {size["description"]} got a total sale of: {total}')
+
+                    for i in range(total):
+                        # Filter with date and add to list.
+                        sale = Sale(self.product_dict["url"], json_response['ProductActivity'][i]['shoeSize'],
+                                    json_response['ProductActivity'][i]['createdAt'],
+                                    json_response['ProductActivity'][i]['localAmount'])
+                        sales.append(sale)
+                break
+            # Banned.
+            elif response.status_code == 403:
+                print(f'Could not fetch sales for {self.product_dict["url"]} - banned!')
+                del self.session.cookies['__cfduid']
+                logging.critical(f"Could not fetch sales for {self.product_dict['url']} - status code Banned!")
+                # Rotate proxy here.
+                time.sleep(self.delay)
+                continue
+            # Unknown status code.
+            else:
+                print(f'Could not fetch sales for {self.product_dict["url"]} - unknow status code: {response.status_code}!')
+                logging.critical(f"Could not fetch sales for {self.product_dict['url']} - status code {response.status_code}!")
+                time.sleep(self.delay)
+                continue
+
+        return sales
+
 
     # Fetch product information.
     def fetch_product_info(self):
-        try:
-            response = self.session.get(self.product_dict['url'], headers=self.headers, timeout=self.timeout)
-        except Exception as e:
-            print(f'Could not request {self.product_dict["url"]} => {e}')
-            time.sleep(self.delay)
-            pass
 
-        # Valid status code.
-        if response.status_code == 200:
+        while True:
             try:
-                # Parse product information.
-                # Below info maybe found in JSON?
-                soup = BeautifulSoup(response.text, 'html.parser')
-                element = soup.find('span', {'data-testid': 'product-detail-style'})
-                style_code = element.text.strip()
-                element = soup.find('span', {'data-testid': 'product-detail-colorway'})
-                colorway = element.text.strip()
-                element = soup.find('span', {'data-testid': 'product-detail-retail price'})
-                retail_price = element.text.strip()
-                element = soup.find('span', {'data-testid': 'product-detail-release date'})
-                date = element.text.strip()
-                element = soup.find('h1', {'data-testid': 'product-name'})
-                name = element.text.strip()
-                product = Product(self.product_dict["url"], style_code, name, colorway, date, retail_price)
-                print(
-                    f'fetched info for product, style: {style_code} cw: {colorway} retail price: {retail_price} date: {date}')
-            except:
-                print('Could not split response / load as JSON!')
+                response = self.session.get(self.product_dict['url'], headers=self.headers, timeout=self.timeout)
+            except Exception as e:
+                print(f'Could not request {self.product_dict["url"]} => {e}')
+                logging.error(f"Could not request product information (fetch_product_info) => {e}")
                 time.sleep(self.delay)
-                pass
+                continue
+
+            # Valid status code.
+            if response.status_code == 200:
+                try:
+                    # Parse product information.
+                    # Below info maybe found in JSON?
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    element = soup.find('span', {'data-testid': 'product-detail-style'})
+                    style_code = element.text.strip()
+                    element = soup.find('span', {'data-testid': 'product-detail-colorway'})
+                    colorway = element.text.strip()
+                    element = soup.find('span', {'data-testid': 'product-detail-retail price'})
+                    retail_price = element.text.strip()
+                    element = soup.find('span', {'data-testid': 'product-detail-release date'})
+                    date = element.text.strip()
+                    element = soup.find('h1', {'data-testid': 'product-name'})
+                    name = element.text.strip()
+                    product = Product(self.product_dict["url"], style_code, name, colorway, date, retail_price)
+                    print(
+                        f'fetched info for product, style: {style_code} cw: {colorway} retail price: {retail_price} date: {date}')
+                except Exception as e:
+                    print('Could not split response / load as JSON!')
+                    logging.critical(f"Could not split response / load as JSON (fetch product info) => {e}")
+                    time.sleep(self.delay)
+                    continue
+                break            
             # Banned.
-        elif response.status_code == 403:
-            print(f'Could not fetch sales for {self.product_dict["url"]} - banned!')
-            del self.session.cookies['__cfduid']
-            # Rotate proxy here.
-            time.sleep(self.delay)
-            pass
+            elif response.status_code == 403:
+                print(f'Could not fetch sales for {self.product_dict[""]} - banned!')
+                logging.critical(f"Could not fetch sales for {self.product_dict['url']} - status code Banned!")
+                del self.session.cookies['__cfduid']
+                # Rotate proxy here.
+                time.sleep(self.delay)
+                continue
             # Unknown status code.
-        else:
-            print(
-                f'Could not fetch product info for {self.product["url"]} - unknow status code: {response.status_code}!')
-            time.sleep(self.delay)
-            pass
+            else:
+                print(
+                    f'Could not fetch product info for {self.product["url"]} - unknow status code: {response.status_code}!')
+                logging.critical(f"Could not fetch sales for {self.product_dict['url']} - status code {response.status_code}!")
+                time.sleep(self.delay)
+                continue
+        
         return product

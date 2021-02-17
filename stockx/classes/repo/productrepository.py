@@ -5,7 +5,6 @@ from proxymanager import ProxyManager
 
 
 class ProductRepository:
-
     def __init__(self):
         self.connection_manager = ConnectionManager()
         self.cursor = self.connection_manager.cursor
