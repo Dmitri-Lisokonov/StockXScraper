@@ -12,23 +12,24 @@ class ProductRepository:
         self.context = ProductContext(self.cursor)
 
     def scrape_product_info(self):
-        thread_list = []
-
+        # Create proxy dict
         try:
             proxy_manager = ProxyManager('config/proxies.txt')
         except Exception as e:
             print(f'Could not load proxies, error: {e}')
             return
+        # Get products with NULL values(empty)
+        products = self.get_products_without_info()
 
-        products = self.get_products()
+        # Scrape product information
         for product in products:
-            product_class = {
+            product_dict = {
                 'url': product.url
             }
-            stockx_task = StockxTask(product_dict=product_class, proxies=proxy_manager)
+            stockx_task = StockxTask(product_dict=product_dict, proxies=proxy_manager)
             result = stockx_task.fetch_product_info()
+            # Store info in database
             self.update_product(result, product.url)
-
 
     # CRUD Operations
     def create_product(self, product):
@@ -36,6 +37,9 @@ class ProductRepository:
 
     def get_products(self):
         return self.context.get_products()
+
+    def get_products_without_info(self):
+        return self.context.get_products_without_info()
 
     def update_product(self, product, url):
         self.context.update_product(product, url)

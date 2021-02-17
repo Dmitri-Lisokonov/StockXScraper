@@ -1,4 +1,4 @@
-from classes.models.sale import Sale
+from classes.entity.sale import Sale
 
 
 # Class for extracting and manipulating data from the product table.
@@ -52,7 +52,7 @@ class SaleContext:
         for row in rows:
             print(row)
             # Add converters.
-            sale = Sale(row[1], row[2], row[3], row[4], row[5])
+            sale = Sale(row[1], row[2], row[3], row[4])
             sale.id = row[0]
             sale_list.append(sale)
         return sale_list

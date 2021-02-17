@@ -1,4 +1,4 @@
-from classes.models.product import Product
+from classes.entity.product import Product
 
 
 # Class for extracting and manipulating data from the product table.
@@ -17,11 +17,16 @@ class ProductContext:
         self.cursor.execute(query)
         return self.convert_to_product_list()
 
+    def get_products_without_info(self):
+        query = f"SELECT * FROM product " \
+                f"WHERE name IS NULL"
+        self.cursor.execute(query)
+        return self.convert_to_product_list()
+
     def update_product(self, product, url):
         query = f"UPDATE product " \
                 f"SET url = '{product.url}', stylecode = '{product.style}', name = '{product.name}', colorway = '{product.colorway}', releaseDate = '{product.release_date}', retailPrice = {product.retail_price} " \
                 f"WHERE url = '{url}'"
-        print(query)
         self.cursor.execute(query).commit()
 
     def delete_product(self, url):
@@ -40,7 +45,6 @@ class ProductContext:
         product_list = []
         rows = self.cursor.fetchall()
         for row in rows:
-            print(row)
             # Add converters.
             product = Product(row[0], row[1], row[2], row[3], row[4], row[5])
             product_list.append(product)

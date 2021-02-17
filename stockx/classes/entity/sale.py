@@ -1,5 +1,4 @@
 class Sale:
-
     id = None
 
     def __init__(self, url, size, date, price):

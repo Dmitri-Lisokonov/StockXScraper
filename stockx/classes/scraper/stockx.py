@@ -2,12 +2,13 @@ import requests
 import json
 import time
 from threading import Thread as TaskProcessor
-from classes.models.product import Product
-from classes.models.sale import Sale
+from classes.entity.product import Product
+from classes.entity.sale import Sale
 from classes.util.proxyutil import ProxyUtil
 from bs4 import BeautifulSoup
 from random_useragent.random_useragent import Randomize
 
+# MOVE THIS
 random_ua = Randomize()
 
 
@@ -40,6 +41,7 @@ class StockxTask(TaskProcessor):
             'accept-language': 'nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7',
         }
 
+    # Fetch sales
     def fetch_sales_per_size(self):
 
         sales = []
@@ -57,9 +59,9 @@ class StockxTask(TaskProcessor):
             # Splitting product data and loading as JSON.
             try:
                 data_split = \
-                response.text.split('class="product-view"><script type="application/ld+json">')[1].split("</script>")[0]
+                    response.text.split('class="product-view"><script type="application/ld+json">')[1].split(
+                        "</script>")[0]
                 json_response = json.loads(data_split)
-                print(json_response)
             except:
                 print('Could not split response / load as JSON!')
                 time.sleep(self.delay)
@@ -96,7 +98,9 @@ class StockxTask(TaskProcessor):
 
                 for i in range(total):
                     # Filter with date and add to list.
-                    sale = Sale(self.product_dict["url"], json_response['ProductActivity'][i]['shoeSize'], json_response['ProductActivity'][i]['createdAt'], json_response['ProductActivity'][i]['localAmount'])
+                    sale = Sale(self.product_dict["url"], json_response['ProductActivity'][i]['shoeSize'],
+                                json_response['ProductActivity'][i]['createdAt'],
+                                json_response['ProductActivity'][i]['localAmount'])
                     sales.append(sale)
 
         # Banned.
@@ -113,6 +117,7 @@ class StockxTask(TaskProcessor):
             time.sleep(self.delay)
             pass
 
+    # Fetch product information.
     def fetch_product_info(self):
         try:
             response = self.session.get(self.product_dict['url'], headers=self.headers, timeout=self.timeout)
@@ -138,14 +143,14 @@ class StockxTask(TaskProcessor):
                 element = soup.find('h1', {'data-testid': 'product-name'})
                 name = element.text.strip()
                 product = Product(self.product_dict["url"], style_code, name, colorway, date, retail_price)
-                print(f'fetched info for product, style: {style_code} cw: {colorway} retail price: {retail_price} date: {date}')
+                print(
+                    f'fetched info for product, style: {style_code} cw: {colorway} retail price: {retail_price} date: {date}')
             except:
                 print('Could not split response / load as JSON!')
                 time.sleep(self.delay)
                 pass
             # Banned.
         elif response.status_code == 403:
-            print(response.status_code)
             print(f'Could not fetch sales for {self.product_dict["url"]} - banned!')
             del self.session.cookies['__cfduid']
             # Rotate proxy here.
@@ -153,7 +158,8 @@ class StockxTask(TaskProcessor):
             pass
             # Unknown status code.
         else:
-            print(f'Could not fetch product info for {self.product["url"]} - unknow status code: {response.status_code}!')
+            print(
+                f'Could not fetch product info for {self.product["url"]} - unknow status code: {response.status_code}!')
             time.sleep(self.delay)
             pass
         return product

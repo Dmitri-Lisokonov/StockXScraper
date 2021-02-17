@@ -10,19 +10,24 @@ class SaleRepository:
         self.cursor = self.connection_manager.cursor
         self.context = SaleContext(self.cursor)
 
+    # fetch sales for all products in product table
+    # @param: products = list of products
     def fetch_sales_for_products(self, products):
+        # Create proxy dict
         try:
             proxy_manager = ProxyManager('config/proxies.txt')
         except Exception as e:
             print(f'Could not load proxies, error: {e}')
             return
 
+        # Scrape sales
         for product in products:
             product_class = {
                 'url': product.url
             }
             stockx_task = StockxTask(product_dict=product_class, proxies=proxy_manager)
             result = stockx_task.fetch_sales_per_size()
+            # Store sales in database
             self.create_sale(result)
 
     # CRUD Operations
