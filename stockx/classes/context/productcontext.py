@@ -9,10 +9,15 @@ class ProductContext:
         self.cursor = cursor
 
     def create_product(self, product):
-        query = f"INSERT INTO product " \
-                f"VALUES ('{product.url}', '{product.style}', '{product.name}', '{product.colorway}' '{product.release_date}', {product.retail_price})"
+        if product.style is None and product.name is None and product.colorway is None and product.release_date is None and product.retail_price is None:
+            print(f'adding: {product.url}')
+            query = f"INSERT INTO product (url)" \
+                    f"VALUES ('{product.url}')"
+        else:
+            query = f"INSERT INTO product " \
+                    f"VALUES ('{product.url}', '{product.style}', '{product.name}', '{product.colorway}' '{product.release_date}', {product.retail_price})"
         try:
-            	self.cursor.execute(query).commit()
+            self.cursor.execute(query).commit()
         except Exception as e:
             logging.error(f"Could not create product => {e}")
             raise e

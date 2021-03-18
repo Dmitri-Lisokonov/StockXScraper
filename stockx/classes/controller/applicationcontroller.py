@@ -8,9 +8,8 @@ class AppController:
         self.sale_controller = SaleController()
         self.product_controller = ProductController()
 
-    def scrape_urls(self):
-        # To be implemented
-        pass
+    def scrape_urls_from_sitemap(self):
+        self.product_controller.scrape_urls_from_sitemap()
 
     def scrape_products(self):
         self.product_controller.scrape_product_info()

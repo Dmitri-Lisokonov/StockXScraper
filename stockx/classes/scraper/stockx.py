@@ -89,7 +89,8 @@ class StockxTask(TaskProcessor):
                                                     headers=self.headers, params=params, timeout=self.timeout)
                     except:
                         print(f'Could not request sales for size {size["description"]}!')
-                        logging.error(f"Could not request sales for size {size['description']} (fetch sales per size) => {e}")
+                        logging.error(
+                            f"Could not request sales for size {size['description']} (fetch sales per size) => {e}")
                         time.sleep(self.delay)
                         continue
 
@@ -123,13 +124,14 @@ class StockxTask(TaskProcessor):
                 continue
             # Unknown status code.
             else:
-                print(f'Could not fetch sales for {self.product_dict["url"]} - unknow status code: {response.status_code}!')
-                logging.critical(f"Could not fetch sales for {self.product_dict['url']} - status code {response.status_code}!")
+                print(
+                    f'Could not fetch sales for {self.product_dict["url"]} - unknow status code: {response.status_code}!')
+                logging.critical(
+                    f"Could not fetch sales for {self.product_dict['url']} - status code {response.status_code}!")
                 time.sleep(self.delay)
                 continue
 
         return sales
-
 
     # Fetch product information.
     def fetch_product_info(self):
@@ -167,8 +169,8 @@ class StockxTask(TaskProcessor):
                     logging.critical(f"Could not split response / load as JSON (fetch product info) => {e}")
                     time.sleep(self.delay)
                     continue
-                break            
-            # Banned.
+                break
+                # Banned.
             elif response.status_code == 403:
                 print(f'Could not fetch sales for {self.product_dict[""]} - banned!')
                 logging.critical(f"Could not fetch sales for {self.product_dict['url']} - status code Banned!")
@@ -180,8 +182,9 @@ class StockxTask(TaskProcessor):
             else:
                 print(
                     f'Could not fetch product info for {self.product["url"]} - unknow status code: {response.status_code}!')
-                logging.critical(f"Could not fetch sales for {self.product_dict['url']} - status code {response.status_code}!")
+                logging.critical(
+                    f"Could not fetch sales for {self.product_dict['url']} - status code {response.status_code}!")
                 time.sleep(self.delay)
                 continue
-        
+
         return product

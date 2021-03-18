@@ -10,3 +10,6 @@ class ProductController:
 
     def get_all_products(self):
         return self.repo.get_products()
+
+    def scrape_urls_from_sitemap(self):
+        self.repo.scrape_urls_from_sitemap()
