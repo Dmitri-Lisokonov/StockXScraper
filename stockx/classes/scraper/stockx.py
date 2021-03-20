@@ -149,7 +149,6 @@ class StockxTask(TaskProcessor):
                 try:
                     # Parse product information.
                     # Below info maybe found in JSON?
-                    response.text
                     soup = BeautifulSoup(response.text, 'html.parser')
                     element = soup.find('span', {'data-testid': 'product-detail-style'})
                     style_code = element.text.strip()
