@@ -161,9 +161,9 @@ class StockxTask(TaskProcessor):
                     date = element.text.strip()
                     element = soup.find('h1', {'data-testid': 'product-name'})
                     name = element.text.strip()
-                    product = Product(self.product_dict["url"], "style", name, colorway, date, retail_price)
+                    product = Product(self.product_dict["url"], style_code, name, colorway, date, retail_price)
                     print(
-                        f'fetched info for product, style: "style" cw: {colorway} retail price: {retail_price} date: {date}')
+                        f'fetched info for product, style: {style_code} cw: {colorway} retail price: {retail_price} date: {date}')
                 except Exception as e:
                     print('Could not split response / load as JSON!')
                     logging.critical(f"Could not split response / load as JSON (fetch product info) => {e}")
