@@ -25,7 +25,7 @@ class StockxTask(TaskProcessor):
         self.proxy = self.utils.initialize_proxy(proxies=self.proxies)
         self.session.proxies = self.proxy
 
-        self.delay = 15
+        self.delay = 0.5
         self.timeout = 60
         self.user_agent = random_ua.random_agent('desktop', 'windows')
         self.headers = {
@@ -142,7 +142,6 @@ class StockxTask(TaskProcessor):
             except Exception as e:
                 print(f'Could not request {self.product_dict["url"]} => {e}')
                 logging.error(f"Could not request product information (fetch_product_info) => {e}")
-                time.sleep(self.delay)
                 continue
 
             # Valid status code.
@@ -150,6 +149,7 @@ class StockxTask(TaskProcessor):
                 try:
                     # Parse product information.
                     # Below info maybe found in JSON?
+                    response.text
                     soup = BeautifulSoup(response.text, 'html.parser')
                     element = soup.find('span', {'data-testid': 'product-detail-style'})
                     style_code = element.text.strip()
@@ -161,13 +161,12 @@ class StockxTask(TaskProcessor):
                     date = element.text.strip()
                     element = soup.find('h1', {'data-testid': 'product-name'})
                     name = element.text.strip()
-                    product = Product(self.product_dict["url"], style_code, name, colorway, date, retail_price)
+                    product = Product(self.product_dict["url"], "style", name, colorway, date, retail_price)
                     print(
-                        f'fetched info for product, style: {style_code} cw: {colorway} retail price: {retail_price} date: {date}')
+                        f'fetched info for product, style: "style" cw: {colorway} retail price: {retail_price} date: {date}')
                 except Exception as e:
                     print('Could not split response / load as JSON!')
                     logging.critical(f"Could not split response / load as JSON (fetch product info) => {e}")
-                    time.sleep(self.delay)
                     continue
                 break
                 # Banned.
@@ -186,5 +185,5 @@ class StockxTask(TaskProcessor):
                     f"Could not fetch sales for {self.product_dict['url']} - status code {response.status_code}!")
                 time.sleep(self.delay)
                 continue
-
+        time.sleep(self.delay)
         return product

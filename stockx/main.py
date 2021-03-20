@@ -17,8 +17,9 @@ def main():
     # repo = ProductRepository()
     # repo.scrape_product_info()
     app = AppController()
+    app.scrape_products()
     # app.scrape_sales()
-    app.scrape_urls_from_sitemap()
+    # app.scrape_urls_from_sitemap()
 
 
 

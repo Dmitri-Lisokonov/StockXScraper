@@ -18,6 +18,7 @@ class ProductRepository:
 
     def scrape_product_info(self):
         # Create proxy dict
+        result_list = []
         try:
             proxy_manager = ProxyManager('config/proxies.txt')
         except Exception as e:
@@ -33,8 +34,20 @@ class ProductRepository:
             }
             stockx_task = StockxTask(product_dict=product_dict, proxies=proxy_manager)
             result = stockx_task.fetch_product_info()
-            # Store info in database
-            self.update_product(result, product.url)
+            paramlist = [result]
+            result_list.append(paramlist)
+        self.bulk_create_product(result_list)
+
+
+        # # Scrape product information
+        # for product in products:
+        #     product_dict = {
+        #         'url': product.url
+        #     }
+        #     stockx_task = StockxTask(product_dict=product_dict, proxies=proxy_manager)
+        #     result = stockx_task.fetch_product_info()
+        #     # Store info in database
+        #     self.update_product(result, product.url)
 
     def scrape_urls_from_sitemap(self):
         xml_list = ['https://stockx.com/de-de/sitemap/sitemap-0.xml',
@@ -45,13 +58,7 @@ class ProductRepository:
         sitemap = xml_scraper.scrape_site_map()
         keywords = self.string_parser.parse_keywords('config/keywords.txt')
         urls = self.xml_parser.get_urls_by_keyword(sitemap, keywords)
-        print(urls)
-        for url in urls:
-            # Can this be more efficient?
-            products = self.get_product_by_url(url)
-            if len(products) == 0:
-                new_product = Product(url, None, None, None, None, None)
-                self.create_product(new_product)
+        self.bulk_insert_url(urls)
 
     # CRUD Operations
     def create_product(self, product):
@@ -71,3 +78,9 @@ class ProductRepository:
 
     def get_product_by_url(self, url):
         return self.context.get_product_by_url(url)
+
+    def bulk_create_product(self, product_list):
+        self.context.bulk_create_product(product_list)
+
+    def bulk_insert_url(self, url_list):
+        self.context.bulk_insert_url(url_list)

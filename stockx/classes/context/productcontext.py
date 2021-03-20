@@ -8,6 +8,18 @@ class ProductContext:
     def __init__(self, cursor):
         self.cursor = cursor
 
+    def bulk_insert_url(self, url_list):
+        self.cursor.fast_executemany = True
+        query = f"INSERT INTO product (url) VALUES (?)"
+        self.cursor.executemany(query, url_list)
+        self.cursor.commit()
+
+    def bulk_create_product(self, product_list):
+        self.cursor.fast_executemany = True
+        query = f"INSERT INTO product (url, styleCode, name, colorway, releaseDate, retailPrice) VALUES (?, ?, ?, ?, ?, ?)"
+        self.cursor.executemany(query, product_list)
+        self.cursor.commit()
+
     def create_product(self, product):
         if product.style is None and product.name is None and product.colorway is None and product.release_date is None and product.retail_price is None:
             print(f'adding: {product.url}')

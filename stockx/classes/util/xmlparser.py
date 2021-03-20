@@ -19,7 +19,11 @@ class XmlParser:
                             urls.append(loc.text)
             # Remove duplicates
             urls = list(dict.fromkeys(urls))
-            print(url)
-            return urls
+            clean_list = []
+            for url in urls:
+                url_list = [url]
+                clean_list.append(url_list)
+            print(clean_list)
+            return clean_list
         except Exception as e:
             logging.error(f"Could not parse XML file => {e}")
