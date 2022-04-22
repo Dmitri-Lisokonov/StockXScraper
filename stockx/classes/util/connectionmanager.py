@@ -11,9 +11,9 @@ class ConnectionManager:
         try:
             self.conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server}; '
                                     'Server=stockxscraper.database.windows.net;'
-                                    'Database=stockxscraper;'
-                                    'UID=stockx-database-username;'
-                                    'PWD=Lodewijkhasib12!;'
+                                    'Database=XXXXXXX'
+                                    'UID=XXXXXXXX'
+                                    'PWD=XXXXXXXX;'
                                     )
             self.cursor = self.conn.cursor()
         except Exception as e:
